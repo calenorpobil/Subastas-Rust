@@ -1,0 +1,425 @@
+{
+  "address": "7XqZiWcbGwrjeJXSKcspGrbb6SqVteKNx2Re7RyTQYyW",
+  "metadata": {
+    "name": "subastas",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "crear_puja",
+      "discriminator": [
+        168,
+        190,
+        185,
+        51,
+        149,
+        172,
+        2,
+        133
+      ],
+      "accounts": [
+        {
+          "name": "puja",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  117,
+                  106,
+                  97
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "subasta",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98,
+                  97,
+                  115,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "importe_puja",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "crear_subasta",
+      "discriminator": [
+        13,
+        34,
+        70,
+        7,
+        205,
+        125,
+        76,
+        113
+      ],
+      "accounts": [
+        {
+          "name": "subasta",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98,
+                  97,
+                  115,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "nombre",
+          "type": "string"
+        },
+        {
+          "name": "descripcion",
+          "type": "string"
+        },
+        {
+          "name": "importe_minimo",
+          "type": "u64"
+        },
+        {
+          "name": "fecha_inicio",
+          "type": "u64"
+        },
+        {
+          "name": "fecha_fin",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "finalizar_subasta",
+      "discriminator": [
+        27,
+        60,
+        244,
+        11,
+        90,
+        2,
+        163,
+        48
+      ],
+      "accounts": [
+        {
+          "name": "subasta",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98,
+                  97,
+                  115,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "iniciar_subasta",
+      "discriminator": [
+        167,
+        176,
+        176,
+        143,
+        128,
+        22,
+        232,
+        81
+      ],
+      "accounts": [
+        {
+          "name": "subasta",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98,
+                  97,
+                  115,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "_id",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Puja",
+      "discriminator": [
+        103,
+        69,
+        243,
+        232,
+        151,
+        17,
+        244,
+        89
+      ]
+    },
+    {
+      "name": "Subasta",
+      "discriminator": [
+        236,
+        131,
+        101,
+        31,
+        43,
+        145,
+        20,
+        16
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "SubastaYaIniciada",
+      "msg": "La subasta ya ha sido iniciada"
+    },
+    {
+      "code": 6001,
+      "name": "SubastaNoIniciada",
+      "msg": "La subasta no ha sido iniciada"
+    },
+    {
+      "code": 6002,
+      "name": "SubastaYaFinalizada",
+      "msg": "La subasta ya ha sido finalizada"
+    },
+    {
+      "code": 6003,
+      "name": "PujaInsuficiente",
+      "msg": "El importe de la puja debe ser mayor o igual al importe mínimo"
+    },
+    {
+      "code": 6004,
+      "name": "SoloCreadorPuedeIniciar",
+      "msg": "Solo el creador puede iniciar la subasta"
+    },
+    {
+      "code": 6005,
+      "name": "SoloCreadorPuedeFinalizar",
+      "msg": "Solo el creador puede finalizar la subasta"
+    },
+    {
+      "code": 6006,
+      "name": "PujaNoSuperaGanadora",
+      "msg": "La puja debe superar a la puja ganadora actual"
+    },
+    {
+      "code": 6007,
+      "name": "FechasInvalidas",
+      "msg": "La fecha de inicio debe ser anterior a la fecha de fin"
+    },
+    {
+      "code": 6008,
+      "name": "FechaFinEnPasado",
+      "msg": "La fecha de fin debe ser futura"
+    },
+    {
+      "code": 6009,
+      "name": "ImporteMinimoInvalido",
+      "msg": "El importe mínimo debe ser mayor que cero"
+    },
+    {
+      "code": 6010,
+      "name": "SubastaAunNoVencida",
+      "msg": "La subasta todavía no ha alcanzado su fecha de fin"
+    }
+  ],
+  "types": [
+    {
+      "name": "Puja",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "importe_puja",
+            "type": "u64"
+          },
+          {
+            "name": "ts",
+            "type": "u64"
+          },
+          {
+            "name": "pk",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Subasta",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "nombre",
+            "type": "string"
+          },
+          {
+            "name": "descripcion",
+            "type": "string"
+          },
+          {
+            "name": "importe_minimo",
+            "type": "u64"
+          },
+          {
+            "name": "fecha_inicio",
+            "type": "u64"
+          },
+          {
+            "name": "fecha_fin",
+            "type": "u64"
+          },
+          {
+            "name": "estado",
+            "type": "u8"
+          },
+          {
+            "name": "creador",
+            "type": "pubkey"
+          },
+          {
+            "name": "ganador",
+            "type": "pubkey"
+          },
+          {
+            "name": "importe_ganador",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}
