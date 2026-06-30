@@ -19,6 +19,18 @@ type PujaItem = Awaited<ReturnType<typeof getPujas>>[number];
 
 const SIN_GANADOR = PublicKey.default.toString();
 
+// Traduce errores conocidos del programa/runtime a mensajes claros para el
+// usuario. La PDA de la puja se deriva de (subasta, cuenta), por lo que cada
+// cuenta solo puede pujar una vez: un segundo intento hace fallar el `init` con
+// el error "already in use" del System Program.
+function mensajeError(e: unknown, fallback: string): string {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (/already in use/i.test(msg)) {
+    return "Ya has pujado en esta subasta con esta cuenta. Cada cuenta solo puede realizar una puja por subasta.";
+  }
+  return e instanceof Error ? e.message : fallback;
+}
+
 export default function SubastaDetallePage() {
   const { wallet } = useGlobalContext();
   const params = useParams<{ id: string }>();
@@ -59,7 +71,7 @@ export default function SubastaDetallePage() {
       await accion();
       await cargar();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "La operación falló");
+      setError(mensajeError(e, "La operación falló"));
     } finally {
       setAccionando(false);
     }
@@ -92,6 +104,12 @@ export default function SubastaDetallePage() {
 
   const esCreador = subasta.creador.toString() === wallet.publicKey.toString();
   const ganador = subasta.ganador.toString();
+  // Cada cuenta solo puede pujar una vez por subasta (la PDA de la puja se
+  // deriva de la subasta y la cuenta), así que evitamos solicitar la
+  // transacción si esta wallet ya tiene una puja registrada.
+  const yaHaPujado = pujas.some(
+    (p) => p.account.pk.toString() === wallet.publicKey.toString()
+  );
 
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-12 space-y-6">
@@ -141,16 +159,23 @@ export default function SubastaDetallePage() {
 
       {subasta.estado === 1 && (
         <div className="flex flex-wrap items-center gap-2">
+          {yaHaPujado && (
+            <p className="w-full text-sm text-amber-700">
+              Ya has pujado en esta subasta con esta cuenta. Cada cuenta solo
+              puede realizar una puja por subasta.
+            </p>
+          )}
           <input
             type="number"
             min="1"
             placeholder="Importe (lamports)"
             value={importePuja}
             onChange={(e) => setImportePuja(e.target.value)}
-            className="rounded border border-black/15 p-2"
+            disabled={yaHaPujado}
+            className="rounded border border-black/15 p-2 disabled:opacity-50"
           />
           <button
-            disabled={accionando || !importePuja}
+            disabled={accionando || !importePuja || yaHaPujado}
             onClick={() =>
               ejecutar(() =>
                 crearPuja(wallet, idBN, new anchor.BN(importePuja))
