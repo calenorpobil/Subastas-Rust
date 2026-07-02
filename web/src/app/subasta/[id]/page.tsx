@@ -64,15 +64,24 @@ export default function SubastaDetallePage() {
     cargar();
   }, [cargar]);
 
-  const ejecutar = async (accion: () => Promise<string>) => {
+  // `yaAplicado` permite comprobar el estado real on-chain cuando la acción
+  // lanza error: `.rpc()` puede recibir un error de reenvío/preflight
+  // ("already in use") aunque la transacción ya se haya confirmado, así que si
+  // el efecto ya está aplicado no lo tratamos como fallo.
+  const ejecutar = async (
+    accion: () => Promise<string>,
+    yaAplicado?: () => Promise<boolean>
+  ) => {
     setAccionando(true);
     setError(null);
     try {
       await accion();
-      await cargar();
     } catch (e) {
-      setError(mensajeError(e, "La operación falló"));
+      if (!(yaAplicado && (await yaAplicado().catch(() => false)))) {
+        setError(mensajeError(e, "La operación falló"));
+      }
     } finally {
+      await cargar();
       setAccionando(false);
     }
   };
@@ -110,6 +119,9 @@ export default function SubastaDetallePage() {
   const yaHaPujado = pujas.some(
     (p) => p.account.pk.toString() === wallet.publicKey.toString()
   );
+  // El programa solo permite finalizar una vez alcanzada la fecha de cierre
+  // (`now >= fecha_fin`); antes de eso la transacción siempre revierte.
+  const vencida = Date.now() >= subasta.fechaFin.toNumber() * 1000;
 
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-12 space-y-6">
@@ -177,8 +189,13 @@ export default function SubastaDetallePage() {
           <button
             disabled={accionando || !importePuja || yaHaPujado}
             onClick={() =>
-              ejecutar(() =>
-                crearPuja(wallet, idBN, new anchor.BN(importePuja))
+              ejecutar(
+                () => crearPuja(wallet, idBN, new anchor.BN(importePuja)),
+                async () =>
+                  (await getPujas(wallet, idBN)).some(
+                    (p) =>
+                      p.account.pk.toString() === wallet.publicKey.toString()
+                  )
               )
             }
             className="rounded bg-green-600 px-4 py-2 text-white disabled:opacity-50"
@@ -186,13 +203,26 @@ export default function SubastaDetallePage() {
             Pujar
           </button>
           {esCreador && (
-            <button
-              disabled={accionando}
-              onClick={() => ejecutar(() => finalizarSubasta(wallet, idBN))}
-              className="rounded bg-red-600 px-4 py-2 text-white disabled:opacity-50"
-            >
-              Finalizar subasta
-            </button>
+            <>
+              <button
+                disabled={accionando || !vencida}
+                onClick={() =>
+                  ejecutar(
+                    () => finalizarSubasta(wallet, idBN),
+                    async () =>
+                      (await getSubasta(wallet, idBN))?.estado === 2
+                  )
+                }
+                className="rounded bg-red-600 px-4 py-2 text-white disabled:opacity-50"
+              >
+                Finalizar subasta
+              </button>
+              {!vencida && (
+                <p className="w-full text-sm text-zinc-500">
+                  Podrás finalizar la subasta cuando llegue su fecha de cierre.
+                </p>
+              )}
+            </>
           )}
         </div>
       )}
